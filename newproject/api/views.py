@@ -13,10 +13,18 @@ def get_users(request):
 
 @api_view(['POST'])
 def create_user(request):
-    serializer = UserSerializer(data=request.data)
+    data = request.data
+
+    # Check if the input is a list for batch creation
+    if isinstance(data, list):
+        serializer = UserSerializer(data=data, many=True)
+    else:
+        serializer = UserSerializer(data=data)  # Single user creation
+
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
     return Response({
         "error": "Invalid data",
         "details": serializer.errors
@@ -43,3 +51,4 @@ def user_detail(request, pk):
     elif request.method == 'DELETE':
         user.delete() 
         return Response({"message": "User deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+    
